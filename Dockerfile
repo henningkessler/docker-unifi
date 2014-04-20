@@ -13,11 +13,6 @@ RUN echo "deb http://us.archive.ubuntu.com/ubuntu/ precise-updates main restrict
 RUN echo "deb http://downloads-distro.mongodb.org/repo/ubuntu-upstart dist 10gen" >> /etc/apt/sources.list.d/mongodb.list
 RUN echo "deb http://www.ubnt.com/downloads/unifi/distros/deb/ubuntu ubuntu ubiquiti" > /etc/apt/sources.list.d/ubiquiti.list
 
-# Redirect initctl
-RUN dpkg-divert --local --rename --add /sbin/initctl && ln -s /bin/true /sbin/initctl
-
-# RUN echo 'Acquire::http::Proxy "http://local.cache:8123";' > /etc/apt/apt.conf.d/01proxy
-
 # Install
 RUN apt-get update && apt-get install -y unifi-beta
 
