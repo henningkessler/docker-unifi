@@ -14,7 +14,7 @@ RUN echo "deb http://downloads-distro.mongodb.org/repo/ubuntu-upstart dist 10gen
 RUN echo "deb http://www.ubnt.com/downloads/unifi/distros/deb/ubuntu ubuntu ubiquiti" > /etc/apt/sources.list.d/ubiquiti.list
 
 # Install
-RUN apt-get update && apt-get install -y unifi-rapid
+RUN apt-get update && apt-get install -y unifi-beta
 
 # Wipe out auto-generated data
 RUN rm -rf /var/lib/unifi/*
