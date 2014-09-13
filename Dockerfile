@@ -1,20 +1,30 @@
-FROM ubuntu:precise
+FROM ubuntu:14.04
+MAINTAINER Jason McNeil <jason@jasonrm.net>
 
-# Add MongoDB key
+ENV DEBIAN_FRONTEND noninteractive
+
+RUN apt-get update && apt-get upgrade -y && apt-get dist-upgrade -y
+
+# Common Deps
+RUN apt-get -y install curl software-properties-common
+
+# Oracle Java 8
+RUN echo oracle-java8-installer shared/accepted-oracle-license-v1-1 select true | /usr/bin/debconf-set-selections
+RUN add-apt-repository ppa:webupd8team/java && apt-get update
+RUN apt-get -y install oracle-java8-installer
+RUN update-java-alternatives -s java-8-oracle
+ENV JAVA_HOME /usr/lib/jvm/java-8-oracle
+ENV JAVA8_HOME /usr/lib/jvm/java-8-oracle
+
+# MongoDB
 RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 7F0CEB10
-# Add Ubiquity key
-RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv C0A52C50
+ADD mongodb.list /etc/apt/sources.list.d/mongodb.list
+RUN apt-get update && apt-get -y install mongodb-server
 
-# Update sources
-RUN echo "deb http://archive.ubuntu.com/ubuntu precise main universe" > /etc/apt/sources.list
-RUN echo "deb http://us.archive.ubuntu.com/ubuntu/ precise-security main restricted universe multiverse" >> /etc/apt/sources.list
-RUN echo "deb http://us.archive.ubuntu.com/ubuntu/ precise-updates main restricted universe multiverse" >> /etc/apt/sources.list
-
-RUN echo "deb http://downloads-distro.mongodb.org/repo/ubuntu-upstart dist 10gen" >> /etc/apt/sources.list.d/mongodb.list
-RUN echo "deb http://www.ubnt.com/downloads/unifi/distros/deb/ubuntu ubuntu ubiquiti" > /etc/apt/sources.list.d/ubiquiti.list
-
-# Install
-RUN apt-get update && apt-get install -y unifi-beta
+# UniFi 4.x
+RUN apt-get -y install jsvc
+RUN curl -L -o unifi_sysvinit_all.deb http://dl.ubnt.com/unifi/4.1.1-f5b856/unifi_sysvinit_all.deb
+RUN dpkg --install unifi_sysvinit_all.deb
 
 # Wipe out auto-generated data
 RUN rm -rf /var/lib/unifi/*
@@ -22,6 +32,10 @@ RUN rm -rf /var/lib/unifi/*
 EXPOSE 8080 8081 8443 8843 8880
 
 VOLUME ["/var/lib/unifi"]
+
 WORKDIR /var/lib/unifi
 
-CMD ["/usr/lib/jvm/java-6-openjdk-amd64/jre/bin/java", "-Xmx1024M", "-jar", "/usr/lib/unifi/lib/ace.jar", "start"]
+ADD run.sh /run.sh
+RUN chmod 755 /run.sh
+
+CMD ["/run.sh"]
